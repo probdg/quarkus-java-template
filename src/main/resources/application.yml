@@ -1,0 +1,101 @@
+# ============================================
+# Application Configuration
+# ============================================
+quarkus:
+  application:
+    name: quarkus-template
+    version: ${project.version:1.0.0-SNAPSHOT}
+  
+  # ============================================
+  # HTTP Configuration
+  # ============================================
+  http:
+    port: ${PORT:8080}
+    cors:
+      ~: true
+      origins: "*"
+      methods: "GET,POST,PUT,DELETE,OPTIONS,PATCH"
+      headers: "*"
+    
+  # ============================================
+  # Logging Configuration
+  # ============================================
+  log:
+    level: INFO
+    category:
+      "com.example":
+        level: DEBUG
+    console:
+      enable: true
+      format: "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{3.}] (%t) %s%e%n"
+      json: false
+  
+  # ============================================
+  # OpenAPI / Swagger Configuration
+  # ============================================
+  smallrye-openapi:
+    path: /api/swagger
+    info-title: Quarkus Template API
+    info-version: ${quarkus.application.version}
+    info-description: Production-ready Quarkus template with best practices
+    info-contact-email: support@example.com
+    info-contact-name: API Support
+    info-license-name: Apache 2.0
+    info-license-url: https://www.apache.org/licenses/LICENSE-2.0.html
+  
+  swagger-ui:
+    always-include: true
+    path: /api/swagger-ui
+    title: Quarkus Template API Documentation
+    
+  # ============================================
+  # Database Configuration
+  # ============================================
+  datasource:
+    db-kind: postgresql
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    jdbc:
+      url: ${DB_URL:jdbc:postgresql://localhost:5432/quarkus_template}
+      max-size: 16
+      min-size: 2
+  
+  hibernate-orm:
+    database:
+      generation: update
+    log:
+      sql: false
+      format-sql: true
+    jdbc:
+      statement-batch-size: 20
+  
+  # ============================================
+  # Health Check Configuration
+  # ============================================
+  smallrye-health:
+    root-path: /health
+    liveness-path: /health/live
+    readiness-path: /health/ready
+    
+  # ============================================
+  # Metrics Configuration
+  # ============================================
+  micrometer:
+    enabled: true
+    export:
+      prometheus:
+        enabled: true
+        path: /metrics
+
+# ============================================
+# Application Custom Properties
+# ============================================
+app:
+  name: ${quarkus.application.name}
+  version: ${quarkus.application.version}
+  api:
+    base-path: /api
+  security:
+    jwt:
+      secret: ${JWT_SECRET:PLEASE_CHANGE_THIS_SECRET_IN_PRODUCTION}
+      expiration: ${JWT_EXPIRATION:86400}

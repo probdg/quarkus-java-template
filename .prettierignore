@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+target/
+.mvn/
+
+# Build outputs
+dist/
+build/
+*.jar
+*.war
+*.ear
+*.class
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+.nyc_output/
+jacoco.xml
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+
+# Generated files
+*.generated.*
