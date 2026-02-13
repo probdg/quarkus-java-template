@@ -70,6 +70,36 @@ quarkus:
       statement-batch-size: 20
   
   # ============================================
+  # Redis Configuration
+  # ============================================
+  redis:
+    hosts: ${REDIS_HOST:redis://localhost:6379}
+    password: ${REDIS_PASSWORD:}
+    database: ${REDIS_DATABASE:0}
+    
+  cache:
+    enabled: true
+    type: redis
+  
+  # ============================================
+  # Kafka Configuration
+  # ============================================
+  
+  # ============================================
+  # Security Configuration
+  # ============================================
+  security:
+    users:
+      file:
+        enabled: true
+        plain-text: true
+        users: users.properties
+        roles: roles.properties
+  
+  smallrye-jwt:
+    enabled: true
+  
+  # ============================================
   # Health Check Configuration
   # ============================================
   smallrye-health:
@@ -99,3 +129,33 @@ app:
     jwt:
       secret: ${JWT_SECRET:PLEASE_CHANGE_THIS_SECRET_IN_PRODUCTION}
       expiration: ${JWT_EXPIRATION:86400}
+  
+  # MinIO Configuration
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket-name: ${MINIO_BUCKET:quarkus-bucket}
+
+# ============================================
+# Kafka Messaging Configuration
+# ============================================
+mp:
+  messaging:
+    incoming:
+      greetings-in:
+        connector: smallrye-kafka
+        topic: greetings
+        value:
+          deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    
+    outgoing:
+      greetings-out:
+        connector: smallrye-kafka
+        topic: greetings
+        value:
+          serializer: org.apache.kafka.common.serialization.StringSerializer
+
+kafka:
+  bootstrap:
+    servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
