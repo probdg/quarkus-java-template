@@ -79,7 +79,6 @@ quarkus:
     
   cache:
     enabled: true
-    type: redis
   
   # ============================================
   # Kafka Configuration
