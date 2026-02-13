@@ -12,24 +12,24 @@ import static org.junit.jupiter.api.Assertions.*;
 @QuarkusTest
 class GreetingServiceTest {
 
-    @Inject
-    GreetingService greetingService;
+  @Inject
+  GreetingService greetingService;
 
-    @Test
-    void testGreet() {
-        String name = "John";
-        String result = greetingService.greet(name);
-        
-        assertNotNull(result);
-        assertTrue(result.contains(name));
-        assertTrue(result.contains("Hello"));
-    }
+  @Test
+  void testGreet() {
+    String name = "John";
+    String result = greetingService.greet(name);
 
-    @Test
-    void testGetDefaultGreeting() {
-        String result = greetingService.getDefaultGreeting();
-        
-        assertNotNull(result);
-        assertTrue(result.contains("Hello"));
-    }
+    assertNotNull(result);
+    assertTrue(result.contains(name));
+    assertTrue(result.contains("Hello"));
+  }
+
+  @Test
+  void testGetDefaultGreeting() {
+    String result = greetingService.getDefaultGreeting();
+
+    assertNotNull(result);
+    assertTrue(result.contains("Hello"));
+  }
 }

@@ -15,42 +15,33 @@ import org.jboss.logging.Logger;
 @Provider
 public class GenericExceptionMapper implements ExceptionMapper<Exception> {
 
-    private static final Logger LOG = Logger.getLogger(GenericExceptionMapper.class);
+  private static final Logger LOG = Logger.getLogger(GenericExceptionMapper.class);
 
-    @Context
-    UriInfo uriInfo;
+  @Context
+  UriInfo uriInfo;
 
-    @Override
-    public Response toResponse(Exception exception) {
-        String path = uriInfo != null ? uriInfo.getPath() : "unknown";
-        
-        if (exception instanceof WebApplicationException) {
-            WebApplicationException webEx = (WebApplicationException) exception;
-            int status = webEx.getResponse().getStatus();
-            
-            LOG.errorf("Web application exception at %s: %s", path, exception.getMessage());
-            
-            ErrorResponse errorResponse = new ErrorResponse(
-                    status,
-                    Response.Status.fromStatusCode(status).getReasonPhrase(),
-                    exception.getMessage(),
-                    path
-            );
-            
-            return Response.status(status).entity(errorResponse).build();
-        }
+  @Override
+  public Response toResponse(Exception exception) {
+    String path = uriInfo != null ? uriInfo.getPath() : "unknown";
 
-        LOG.errorf(exception, "Internal server error at %s", path);
+    if (exception instanceof WebApplicationException) {
+      WebApplicationException webEx = (WebApplicationException) exception;
+      int status = webEx.getResponse().getStatus();
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-                "Internal Server Error",
-                "An unexpected error occurred. Please try again later.",
-                path
-        );
+      LOG.errorf("Web application exception at %s: %s", path, exception.getMessage());
 
-        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity(errorResponse)
-                .build();
+      ErrorResponse errorResponse = new ErrorResponse(status,
+          Response.Status.fromStatusCode(status).getReasonPhrase(), exception.getMessage(), path);
+
+      return Response.status(status).entity(errorResponse).build();
     }
+
+    LOG.errorf(exception, "Internal server error at %s", path);
+
+    ErrorResponse errorResponse =
+        new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+            "Internal Server Error", "An unexpected error occurred. Please try again later.", path);
+
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build();
+  }
 }

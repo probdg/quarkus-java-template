@@ -9,27 +9,26 @@ import java.io.Serializable;
  */
 public class GreetingRequest implements Serializable {
 
-    @NotBlank(message = "Name cannot be blank")
-    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
-    private String name;
+  @NotBlank(message = "Name cannot be blank")
+  @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+  private String name;
 
-    public GreetingRequest() {
-    }
+  public GreetingRequest() {}
 
-    public GreetingRequest(String name) {
-        this.name = name;
-    }
+  public GreetingRequest(String name) {
+    this.name = name;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    @Override
-    public String toString() {
-        return "GreetingRequest{name='" + name + "'}";
-    }
+  @Override
+  public String toString() {
+    return "GreetingRequest{name='" + name + "'}";
+  }
 }

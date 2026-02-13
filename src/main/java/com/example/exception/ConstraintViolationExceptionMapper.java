@@ -16,33 +16,26 @@ import java.util.stream.Collectors;
  * Exception mapper for constraint violations.
  */
 @Provider
-public class ConstraintViolationExceptionMapper implements ExceptionMapper<ConstraintViolationException> {
+public class ConstraintViolationExceptionMapper
+    implements ExceptionMapper<ConstraintViolationException> {
 
-    private static final Logger LOG = Logger.getLogger(ConstraintViolationExceptionMapper.class);
+  private static final Logger LOG = Logger.getLogger(ConstraintViolationExceptionMapper.class);
 
-    @Context
-    UriInfo uriInfo;
+  @Context
+  UriInfo uriInfo;
 
-    @Override
-    public Response toResponse(ConstraintViolationException exception) {
-        String path = uriInfo != null ? uriInfo.getPath() : "unknown";
-        
-        String message = exception.getConstraintViolations()
-                .stream()
-                .map(ConstraintViolation::getMessage)
-                .collect(Collectors.joining(", "));
+  @Override
+  public Response toResponse(ConstraintViolationException exception) {
+    String path = uriInfo != null ? uriInfo.getPath() : "unknown";
 
-        LOG.errorf("Validation error at %s: %s", path, message);
+    String message = exception.getConstraintViolations().stream()
+        .map(ConstraintViolation::getMessage).collect(Collectors.joining(", "));
 
-        ErrorResponse errorResponse = new ErrorResponse(
-                Response.Status.BAD_REQUEST.getStatusCode(),
-                "Validation Error",
-                message,
-                path
-        );
+    LOG.errorf("Validation error at %s: %s", path, message);
 
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity(errorResponse)
-                .build();
-    }
+    ErrorResponse errorResponse = new ErrorResponse(Response.Status.BAD_REQUEST.getStatusCode(),
+        "Validation Error", message, path);
+
+    return Response.status(Response.Status.BAD_REQUEST).entity(errorResponse).build();
+  }
 }
