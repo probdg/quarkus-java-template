@@ -9,6 +9,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
 /**
  * Integration tests for UserController.
@@ -24,11 +25,12 @@ class UserControllerTest {
   void testCreateUser() {
     String requestBody = "{\"email\": \"test@example.com\", \"name\": \"Test User\"}";
 
-    createdUserId = given().contentType(ContentType.JSON).body(requestBody).when()
-        .post("/api/users").then().statusCode(201).contentType(ContentType.JSON)
+    Integer id = given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users")
+        .then().statusCode(201).contentType(ContentType.JSON)
         .body("email", equalTo("test@example.com")).body("name", equalTo("Test User"))
         .body("id", notNullValue()).body("createdAt", notNullValue())
         .body("updatedAt", notNullValue()).extract().path("id");
+    createdUserId = id.longValue();
   }
 
   @Test
@@ -44,8 +46,9 @@ class UserControllerTest {
     if (createdUserId == null) {
       // Create a user first if not already created
       String requestBody = "{\"email\": \"test2@example.com\", \"name\": \"Test User 2\"}";
-      createdUserId = given().contentType(ContentType.JSON).body(requestBody).when()
-          .post("/api/users").then().statusCode(201).extract().path("id");
+      Integer id = given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users")
+          .then().statusCode(201).extract().path("id");
+      createdUserId = id.longValue();
     }
 
     given().when().get("/api/users/{id}", createdUserId).then().statusCode(200)
@@ -59,16 +62,16 @@ class UserControllerTest {
     if (createdUserId == null) {
       // Create a user first if not already created
       String requestBody = "{\"email\": \"test3@example.com\", \"name\": \"Test User 3\"}";
-      createdUserId = given().contentType(ContentType.JSON).body(requestBody).when()
-          .post("/api/users").then().statusCode(201).extract().path("id");
+      Integer id = given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users")
+          .then().statusCode(201).extract().path("id");
+      createdUserId = id.longValue();
     }
 
     String updateBody = "{\"email\": \"updated@example.com\", \"name\": \"Updated User\"}";
 
     given().contentType(ContentType.JSON).body(updateBody).when()
-        .put("/api/users/{id}", createdUserId).then().statusCode(200)
-        .contentType(ContentType.JSON).body("email", equalTo("updated@example.com"))
-        .body("name", equalTo("Updated User"));
+        .put("/api/users/{id}", createdUserId).then().statusCode(200).contentType(ContentType.JSON)
+        .body("email", equalTo("updated@example.com")).body("name", equalTo("Updated User"));
   }
 
   @Test
@@ -77,8 +80,9 @@ class UserControllerTest {
     if (createdUserId == null) {
       // Create a user first if not already created
       String requestBody = "{\"email\": \"test4@example.com\", \"name\": \"Test User 4\"}";
-      createdUserId = given().contentType(ContentType.JSON).body(requestBody).when()
-          .post("/api/users").then().statusCode(201).extract().path("id");
+      Integer id = given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users")
+          .then().statusCode(201).extract().path("id");
+      createdUserId = id.longValue();
     }
 
     given().when().delete("/api/users/{id}", createdUserId).then().statusCode(204);

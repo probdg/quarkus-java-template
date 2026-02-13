@@ -89,7 +89,7 @@ public class UserController {
   /**
    * Update an existing user.
    *
-   * @param id      the user ID
+   * @param id the user ID
    * @param request the user request
    * @return the updated user
    */
