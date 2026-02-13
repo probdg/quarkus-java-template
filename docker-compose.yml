@@ -15,7 +15,7 @@ services:
       - DB_URL=jdbc:postgresql://postgres:5432/quarkus_template
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
-      - JWT_SECRET=change-me-in-production
+      - JWT_SECRET=${JWT_SECRET:-REQUIRED_SET_IN_ENV_FILE}
     depends_on:
       postgres:
         condition: service_healthy

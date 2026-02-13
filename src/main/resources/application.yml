@@ -97,5 +97,5 @@ app:
     base-path: /api
   security:
     jwt:
-      secret: ${JWT_SECRET:changeme}
+      secret: ${JWT_SECRET:PLEASE_CHANGE_THIS_SECRET_IN_PRODUCTION}
       expiration: ${JWT_EXPIRATION:86400}
