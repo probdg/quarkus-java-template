@@ -56,8 +56,8 @@ public class UserService {
     LOG.infof("Creating user with email: %s", request.getEmail());
 
     // Check if user with email already exists
-    User existingUser = User.find("email", request.getEmail()).firstResult();
-    if (existingUser != null) {
+    long count = User.count("email", request.getEmail());
+    if (count > 0) {
       throw new IllegalArgumentException("User with email already exists: " + request.getEmail());
     }
 
@@ -88,8 +88,8 @@ public class UserService {
 
     // Check if email is being changed to an existing email
     if (!user.getEmail().equals(request.getEmail())) {
-      User existingUser = User.find("email", request.getEmail()).firstResult();
-      if (existingUser != null) {
+      long count = User.count("email", request.getEmail());
+      if (count > 0) {
         throw new IllegalArgumentException("User with email already exists: " + request.getEmail());
       }
     }

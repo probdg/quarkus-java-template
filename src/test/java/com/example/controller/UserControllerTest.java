@@ -101,7 +101,7 @@ class UserControllerTest {
 
   @Test
   void testCreateUserWithBlankName() {
-    String requestBody = "{\"email\": \"test@example.com\", \"name\": \"  \"}";
+    String requestBody = "{\"email\": \"blank-name@example.com\", \"name\": \"  \"}";
 
     given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users").then()
         .statusCode(400).contentType(ContentType.JSON);
