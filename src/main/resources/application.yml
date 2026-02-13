@@ -135,6 +135,13 @@ app:
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
     secret-key: ${MINIO_SECRET_KEY:minioadmin}
     bucket-name: ${MINIO_BUCKET:quarkus-bucket}
+  
+  # Rate Limiting Configuration
+  rate-limit:
+    capacity: ${RATE_LIMIT_CAPACITY:100}
+    refill-duration-minutes: ${RATE_LIMIT_REFILL_MINUTES:1}
+    ddos-threshold: ${DDOS_THRESHOLD:200}
+    ddos-window-minutes: ${DDOS_WINDOW_MINUTES:1}
 
 # ============================================
 # Kafka Messaging Configuration
