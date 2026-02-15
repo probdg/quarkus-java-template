@@ -10,14 +10,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Integration tests for VaultService.
- * 
- * Note: These tests are disabled by default as they require a running Vault instance.
- * To run these tests, start Vault using docker-compose and remove the @Disabled annotation.
+ *
+ * Note: These tests are disabled by default as they require a running Vault instance. To run these
+ * tests, start Vault using docker-compose and remove the @Disabled annotation.
  */
 @QuarkusTest
 class VaultServiceTest {
 
-  @Inject VaultService vaultService;
+  @Inject
+  VaultService vaultService;
 
   @Test
   @Disabled("Requires running Vault instance")
