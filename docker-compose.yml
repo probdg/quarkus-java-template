@@ -157,7 +157,7 @@ services:
   # HashiCorp Vault
   # ====================================
   vault:
-    image: hashicorp/vault:latest
+    image: hashicorp/vault:1.15.0
     container_name: quarkus-vault
     ports:
       - "8200:8200"

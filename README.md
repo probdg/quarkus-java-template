@@ -246,7 +246,9 @@ docker-compose exec vault vault write auth/userpass/users/quarkus \
   password=quarkus \
   policies=default
 
-# Write example secrets
+# Write example secrets to Vault
+# Note: The full path in Vault is secret/application/{your-path}
+# When using VaultService, only provide the path after secret/application/
 docker-compose exec vault vault kv put secret/application/config/app \
   api-key=example-api-key-12345 \
   db-encryption-key=secret-encryption-key-67890
@@ -271,6 +273,8 @@ public class MyService {
   
   public void useSecret() {
     // Get secret from Vault
+    // Note: Only provide the path after 'secret/application/'
+    // The full path in Vault would be: secret/application/config/app
     Map<String, String> secrets = vaultService.getSecret("config/app");
     String apiKey = secrets.get("api-key");
     
@@ -302,7 +306,9 @@ quarkus:
       userpass:
         username: ${VAULT_USERNAME:quarkus}
         password: ${VAULT_PASSWORD:quarkus}
-    secret-config-kv-path: secret/application
+    # Note: This is commented out to avoid eager connection during startup
+    # Uncomment only if you want to use Vault as a configuration source
+    # secret-config-kv-path: secret/application
     kv-secret-engine-version: 2
 ```
 
