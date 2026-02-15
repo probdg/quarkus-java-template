@@ -20,6 +20,7 @@ Template Quarkus siap produksi dengan best practices, quality gates, dan DevOps 
 | **Metrics** | Micrometer + Prometheus | Application metrics |
 | **OpenAPI** | SmallRye OpenAPI | API documentation (Swagger) |
 | **Logging** | JSON Logging | Structured logging |
+| **Secrets Management** | HashiCorp Vault | Secure secrets and configuration management |
 | **Testing** | JUnit 5 + REST Assured | Unit dan integration testing |
 | **Code Quality** | Checkstyle + PMD + SpotBugs | Static code analysis |
 | **Coverage** | JaCoCo | Code coverage reporting |
@@ -119,6 +120,15 @@ quarkus-template/
 | GET | `/api/greeting/{name}` | Get personalized greeting |
 | POST | `/api/greeting` | Create personalized greeting |
 
+### Secured API
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/secured/public` | Public endpoint (no auth required) |
+| GET | `/api/secured/user` | User endpoint (requires user or admin role) |
+| GET | `/api/secured/admin` | Admin endpoint (requires admin role) |
+| GET | `/api/secured/vault-secret` | Get secret from Vault |
+
 ### Health & Metrics
 
 | Endpoint | Description |
@@ -176,12 +186,145 @@ docker-compose down
 
 - **app**: Quarkus application (port 8080)
 - **postgres**: PostgreSQL database (port 5432)
+- **redis**: Redis cache (port 6379)
+- **kafka**: Kafka message broker (port 9092)
+- **zookeeper**: Zookeeper for Kafka (port 2181)
+- **minio**: MinIO object storage (port 9000, console: 9001)
+- **vault**: HashiCorp Vault for secrets management (port 8200)
 - **pgadmin**: PgAdmin web interface (port 5050, profile: dev)
 
 ```bash
 # Jalankan dengan PgAdmin (development)
 docker-compose --profile dev up -d
 ```
+
+## 🔐 HashiCorp Vault Integration
+
+Template ini terintegrasi dengan HashiCorp Vault untuk manajemen secrets yang aman.
+
+### Fitur Vault
+
+- **Secrets Management**: Simpan dan kelola secrets dengan aman (API keys, passwords, tokens)
+- **Dynamic Secrets**: Generate secrets on-demand dengan TTL
+- **Encryption as a Service**: Enkripsi dan dekripsi data
+- **Access Control**: Fine-grained access control policies
+
+### Setup Vault
+
+#### Development Mode (Docker Compose)
+
+Vault sudah termasuk dalam `docker-compose.yml` dan akan berjalan secara otomatis:
+
+```bash
+# Start all services including Vault
+docker-compose up -d
+
+# Check Vault status
+docker-compose logs vault
+```
+
+**Default Credentials (Development Only):**
+- URL: `http://localhost:8200`
+- Root Token: `root`
+- Username: `quarkus`
+- Password: `quarkus`
+
+#### Initialize Vault for Development
+
+Setelah Vault berjalan, inisialisasi secrets untuk aplikasi:
+
+```bash
+# Set environment variables
+export VAULT_ADDR=http://localhost:8200
+export VAULT_TOKEN=root
+
+# Enable userpass authentication (if not already enabled)
+docker-compose exec vault vault auth enable userpass
+
+# Create a user for the application
+docker-compose exec vault vault write auth/userpass/users/quarkus \
+  password=quarkus \
+  policies=default
+
+# Write example secrets to Vault
+# Note: The full path in Vault is secret/application/{your-path}
+# When using VaultService, only provide the path after secret/application/
+docker-compose exec vault vault kv put secret/application/config/app \
+  api-key=example-api-key-12345 \
+  db-encryption-key=secret-encryption-key-67890
+
+# Read secrets to verify
+docker-compose exec vault vault kv get secret/application/config/app
+```
+
+### Using Vault in Your Application
+
+#### 1. Inject VaultService
+
+```java
+import com.example.service.VaultService;
+import jakarta.inject.Inject;
+
+@ApplicationScoped
+public class MyService {
+  
+  @Inject
+  VaultService vaultService;
+  
+  public void useSecret() {
+    // Get secret from Vault
+    // Note: Only provide the path after 'secret/application/'
+    // The full path in Vault would be: secret/application/config/app
+    Map<String, String> secrets = vaultService.getSecret("config/app");
+    String apiKey = secrets.get("api-key");
+    
+    // Write secret to Vault
+    vaultService.writeSecret("config/new-secret", 
+      Map.of("username", "user", "password", "pass"));
+  }
+}
+```
+
+#### 2. Example Endpoint
+
+Contoh endpoint tersedia di `SecuredController`:
+
+```bash
+# Get secret from Vault
+curl http://localhost:8080/api/secured/vault-secret
+```
+
+### Vault Configuration
+
+Configuration Vault dapat ditemukan di `application.yml`:
+
+```yaml
+quarkus:
+  vault:
+    url: ${VAULT_URL:http://localhost:8200}
+    authentication:
+      userpass:
+        username: ${VAULT_USERNAME:quarkus}
+        password: ${VAULT_PASSWORD:quarkus}
+    # Note: This is commented out to avoid eager connection during startup
+    # Uncomment only if you want to use Vault as a configuration source
+    # secret-config-kv-path: secret/application
+    kv-secret-engine-version: 2
+```
+
+### Production Considerations
+
+⚠️ **Catatan Penting untuk Production:**
+
+1. **Jangan gunakan dev mode**: Gunakan production Vault server dengan TLS
+2. **Gunakan authentication method yang sesuai**: AppRole, Kubernetes, atau Cloud auth
+3. **Enable audit logging**: Track semua akses ke secrets
+4. **Implement secret rotation**: Rotasi secrets secara berkala
+5. **Use proper policies**: Terapkan least-privilege access control
+6. **Secure the Vault token**: Jangan commit atau log Vault tokens
+7. **Enable TLS**: Selalu gunakan HTTPS untuk komunikasi dengan Vault
+
+Untuk production setup, lihat [Quarkus Vault Guide](https://quarkus.io/guides/vault).
 
 ## 🔍 Code Quality
 
@@ -243,6 +386,11 @@ DB_PASSWORD=postgres
 # Security
 JWT_SECRET=changeme-generate-a-secure-secret-key
 JWT_EXPIRATION=86400
+
+# Vault
+VAULT_URL=http://localhost:8200
+VAULT_USERNAME=quarkus
+VAULT_PASSWORD=quarkus
 
 # Logging
 LOG_LEVEL=INFO
