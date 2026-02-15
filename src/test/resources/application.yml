@@ -8,3 +8,7 @@ quarkus:
       generation: drop-and-create
   log:
     level: INFO
+  vault:
+    # Disable Vault for tests
+    devservices:
+      enabled: false

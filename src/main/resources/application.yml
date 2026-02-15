@@ -99,6 +99,18 @@ quarkus:
     enabled: true
   
   # ============================================
+  # Vault Configuration
+  # ============================================
+  vault:
+    url: ${VAULT_URL:http://localhost:8200}
+    authentication:
+      userpass:
+        username: ${VAULT_USERNAME:quarkus}
+        password: ${VAULT_PASSWORD:quarkus}
+    secret-config-kv-path: secret/application
+    kv-secret-engine-version: 2
+    
+  # ============================================
   # Health Check Configuration
   # ============================================
   smallrye-health:

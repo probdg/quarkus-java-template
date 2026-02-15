@@ -21,6 +21,9 @@ services:
       - MINIO_ENDPOINT=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
+      - VAULT_URL=http://vault:8200
+      - VAULT_USERNAME=quarkus
+      - VAULT_PASSWORD=quarkus
     depends_on:
       postgres:
         condition: service_healthy
@@ -29,6 +32,8 @@ services:
       kafka:
         condition: service_started
       minio:
+        condition: service_healthy
+      vault:
         condition: service_healthy
     networks:
       - app-network
@@ -147,6 +152,29 @@ services:
       interval: 30s
       timeout: 20s
       retries: 3
+
+  # ====================================
+  # HashiCorp Vault
+  # ====================================
+  vault:
+    image: hashicorp/vault:latest
+    container_name: quarkus-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: root
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   # ====================================
   # PgAdmin (Optional - for development)
