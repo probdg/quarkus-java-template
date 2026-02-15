@@ -3,6 +3,7 @@ package com.example.controller;
 import com.example.dto.UserRequest;
 import com.example.dto.UserResponse;
 import com.example.service.UserService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -39,6 +40,7 @@ public class UserController {
    * @return list of users
    */
   @GET
+  @RolesAllowed("admin")
   @Operation(summary = "Get all users", description = "Returns a list of all users")
   @APIResponses(value = {@APIResponse(responseCode = "200", description = "Success",
       content = @Content(schema = @Schema(implementation = UserResponse.class)))})
@@ -56,6 +58,7 @@ public class UserController {
    */
   @GET
   @Path("/{id}")
+  @RolesAllowed({"user", "admin"})
   @Operation(summary = "Get user by ID", description = "Returns a user by their ID")
   @APIResponses(value = {
       @APIResponse(responseCode = "200", description = "Success",
@@ -75,6 +78,7 @@ public class UserController {
    * @return the created user
    */
   @POST
+  @RolesAllowed("admin")
   @Operation(summary = "Create a new user", description = "Creates a new user")
   @APIResponses(value = {
       @APIResponse(responseCode = "201", description = "Created",
@@ -95,6 +99,7 @@ public class UserController {
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed("admin")
   @Operation(summary = "Update a user", description = "Updates an existing user")
   @APIResponses(value = {
       @APIResponse(responseCode = "200", description = "Success",
@@ -117,6 +122,7 @@ public class UserController {
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed("admin")
   @Operation(summary = "Delete a user", description = "Deletes a user by their ID")
   @APIResponses(value = {@APIResponse(responseCode = "204", description = "Deleted successfully"),
       @APIResponse(responseCode = "404", description = "User not found")})

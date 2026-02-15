@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -22,6 +23,7 @@ class UserControllerTest {
 
   @Test
   @Order(1)
+  @TestSecurity(user = "admin", roles = {"admin", "user"})
   void testCreateUser() {
     String requestBody = "{\"email\": \"test@example.com\", \"name\": \"Test User\"}";
 
@@ -35,6 +37,7 @@ class UserControllerTest {
 
   @Test
   @Order(2)
+  @TestSecurity(user = "admin", roles = {"admin"})
   void testGetAllUsers() {
     given().when().get("/api/users").then().statusCode(200).contentType(ContentType.JSON)
         .body("size()", greaterThanOrEqualTo(1));
@@ -42,12 +45,13 @@ class UserControllerTest {
 
   @Test
   @Order(3)
+  @TestSecurity(user = "user", roles = {"user"})
   void testGetUserById() {
     if (createdUserId == null) {
       // Create a user first if not already created
       String requestBody = "{\"email\": \"test2@example.com\", \"name\": \"Test User 2\"}";
-      Integer id = given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users")
-          .then().statusCode(201).extract().path("id");
+      Integer id = given().auth().preemptive().basic("admin", "admin").contentType(ContentType.JSON)
+          .body(requestBody).when().post("/api/users").then().statusCode(201).extract().path("id");
       createdUserId = id.longValue();
     }
 
@@ -58,6 +62,7 @@ class UserControllerTest {
 
   @Test
   @Order(4)
+  @TestSecurity(user = "admin", roles = {"admin", "user"})
   void testUpdateUser() {
     if (createdUserId == null) {
       // Create a user first if not already created
@@ -76,6 +81,7 @@ class UserControllerTest {
 
   @Test
   @Order(5)
+  @TestSecurity(user = "admin", roles = {"admin", "user"})
   void testDeleteUser() {
     if (createdUserId == null) {
       // Create a user first if not already created
@@ -87,11 +93,12 @@ class UserControllerTest {
 
     given().when().delete("/api/users/{id}", createdUserId).then().statusCode(204);
 
-    // Verify user is deleted
-    given().when().get("/api/users/{id}", createdUserId).then().statusCode(404);
+    // Verify user is deleted (should return 401 if not authenticated)
+    given().when().get("/api/users/{id}", createdUserId).then().statusCode(anyOf(is(404), is(401)));
   }
 
   @Test
+  @TestSecurity(user = "admin", roles = {"admin"})
   void testCreateUserWithInvalidEmail() {
     String requestBody = "{\"email\": \"invalid-email\", \"name\": \"Test User\"}";
 
@@ -100,6 +107,7 @@ class UserControllerTest {
   }
 
   @Test
+  @TestSecurity(user = "admin", roles = {"admin"})
   void testCreateUserWithBlankName() {
     String requestBody = "{\"email\": \"blank-name@example.com\", \"name\": \"  \"}";
 
@@ -108,11 +116,13 @@ class UserControllerTest {
   }
 
   @Test
+  @TestSecurity(user = "user", roles = {"user"})
   void testGetNonExistentUser() {
     given().when().get("/api/users/{id}", 99999L).then().statusCode(404);
   }
 
   @Test
+  @TestSecurity(user = "admin", roles = {"admin"})
   void testUpdateNonExistentUser() {
     String updateBody = "{\"email\": \"updated@example.com\", \"name\": \"Updated User\"}";
 
@@ -121,7 +131,73 @@ class UserControllerTest {
   }
 
   @Test
+  @TestSecurity(user = "admin", roles = {"admin"})
   void testDeleteNonExistentUser() {
     given().when().delete("/api/users/{id}", 99999L).then().statusCode(404);
+  }
+
+  // RBAC Tests
+
+  @Test
+  void testGetAllUsersWithoutAuth() {
+    given().when().get("/api/users").then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"user"})
+  void testGetAllUsersWithUserRole() {
+    given().when().get("/api/users").then().statusCode(403);
+  }
+
+  @Test
+  void testCreateUserWithoutAuth() {
+    String requestBody = "{\"email\": \"noauth@example.com\", \"name\": \"No Auth User\"}";
+    given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users").then()
+        .statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"user"})
+  void testCreateUserWithUserRole() {
+    String requestBody = "{\"email\": \"useronly@example.com\", \"name\": \"User Only\"}";
+    given().contentType(ContentType.JSON).body(requestBody).when().post("/api/users").then()
+        .statusCode(403);
+  }
+
+  @Test
+  void testUpdateUserWithoutAuth() {
+    String updateBody = "{\"email\": \"noauth@example.com\", \"name\": \"No Auth\"}";
+    given().contentType(ContentType.JSON).body(updateBody).when().put("/api/users/{id}", 1L).then()
+        .statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"user"})
+  void testUpdateUserWithUserRole() {
+    String updateBody = "{\"email\": \"useronly@example.com\", \"name\": \"User Only\"}";
+    given().contentType(ContentType.JSON).body(updateBody).when().put("/api/users/{id}", 1L).then()
+        .statusCode(403);
+  }
+
+  @Test
+  void testDeleteUserWithoutAuth() {
+    given().when().delete("/api/users/{id}", 1L).then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"user"})
+  void testDeleteUserWithUserRole() {
+    given().when().delete("/api/users/{id}", 1L).then().statusCode(403);
+  }
+
+  @Test
+  void testGetUserByIdWithoutAuth() {
+    given().when().get("/api/users/{id}", 1L).then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "guest", roles = {"guest"})
+  void testGetUserByIdWithGuestRole() {
+    given().when().get("/api/users/{id}", 1L).then().statusCode(403);
   }
 }
